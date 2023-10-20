@@ -52,9 +52,16 @@ tesla_tuples = list(tesla_revenue.to_records(index = False))
 cursor.executemany("INSERT INTO revenue VALUES (?,?)", tesla_tuples)
 con.commit()
 
-revenue = tesla_revenue["Revenue"]
-date = tesla_revenue["Date"]
-plt.figure(figsize = (10,5))
-plt.bar(revenue, date)
-plt.tight_layout
+fig, axis = plt.subplots(figsize = (10, 5))
+tesla_revenue["Revenue"] = tesla_revenue["Revenue"].astype('int')
+tesla_revenue["Date"] = pd.to_datetime(tesla_revenue["Date"])
+tesla_revenue_yearly = tesla_revenue.groupby(tesla_revenue["Date"].dt.year).sum().reset_index()
+tesla_revenue_monthly = tesla_revenue.groupby(tesla_revenue["Date"].dt.month).sum().reset_index()
+
+sns.barplot(data = tesla_revenue_yearly[tesla_revenue_yearly["Date"] < 2023], x = "Date", y = "Revenue")
+sns.barplot(data = tesla_revenue_monthly, x = "Date", y = "Revenue")
+sns.lineplot(data = tesla_revenue, x = "Date", y = "Revenue")
+
+plt.tight_layout()
+
 plt.show()
